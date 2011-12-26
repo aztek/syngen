@@ -1,0 +1,32 @@
+{ : . ":\n" . ;
+} : . ;
+
+$( : . "(" . ;
+$) : . ")" ;
+
+id : /[a-zA-Z_][a-zA-Z_0-9]*/ ; % valid identificator
+
+unit
+    : stmnt+
+    ;
+
+_ . stmnt . "\n"
+    : "def" id $( id^", "* $) { stmnt+ }
+    | "return" expr
+    | (var) id "=" expr
+    | "if" expr { stmnt+ }
+    ;
+
+expr
+    : (ref) id
+    | (int) integer
+    | (op) expr op expr
+    | (call) id $( expr^", "* $)
+    ;
+
+op
+    : (equal) "=="
+    | (plus)  "+"
+    | (minus) "-"
+    | (mult)  "*"
+    ;

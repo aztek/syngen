@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+guile -e main -s /home/aztek/syngen/src/main.scm $*

@@ -1,0 +1,11 @@
+value
+    : "null"
+    | "true"
+    | "false"
+    | string
+    | integer
+    | (array)  "[" . value^", "* . "]"
+    | (object) "{" . entry^", "* . "}"
+    ;
+
+entry : string . ":" value ;
