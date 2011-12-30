@@ -23,12 +23,12 @@
      [terminal		(or (: #\" (* (out #\")) #\")
                         (: #\' (* (out #\')) #\')
                         (: #\` (* (out #\`)) #\`))]
-     [nonterminal	(: alpha (* alnum))]
+     [nonterminal	(: alpha (* (in alnum #\- #\_)))]
      [constructor	(: #\( (+ (out #\))) #\))]
      [constant		(: #\$ (+ (out whitespace)))]
      [specialconst	(in #\. #\, #\{ #\} #\_)]
-     [regexp		(: #\/ (* (out #\newline)) #\/)]
-     [comment		(: #\% (* (out #\newline)))])
+     [regexp		(: #\/ (* all) #\/)]
+     [comment		(: #\% (* all))])
 
     (whitespace		(ignore))
     (comment		(ignore))
