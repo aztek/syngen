@@ -269,11 +269,11 @@
 
 (define (generate-module-signature module types)
   (%module (string->symbol module)
-           (cons 'pr (apply append
-                              (map (match-lambda
-                                     [(bind ?- (sum ?disjuncts))
-                                      (map (match-lambda
-                                             [(product ?constructor ?- ?-) (generate-constructor-name constructor)])
-                                           disjuncts)]
-                                     [else '()])
-                                   types)))))
+   (cons 'pr (reverse (apply append
+                             (map (match-lambda
+                                   [(bind ?- (sum ?disjuncts))
+                                    (map (match-lambda
+                                          [(product ?constructor ?- ?-) (generate-constructor-name constructor)])
+                                         disjuncts)]
+                                   [else '()])
+                                  types))))))
