@@ -130,27 +130,3 @@
   (let ([grammar (read/lalrp *lalr-grammar* *rl-grammar* input-port)])
     (reset-eof input-port)
     grammar))
-
-;;(define (test-parser args)
-;;  (let* ([grammar (parse (open-input-file "../examples/json/json.sg"))]
-;;         [adts (grammar->adts grammar)])
-;;    (pp grammar)
-;;    (pp adts)
-;;    (generate-code adts)
-;;    ))
-
-;;(define (test-parser args)
-;;  (let ([port (open-input-file "../examples/python/python.sg")])
-;;    (let loop ([token (read/rp *rl-grammar* port)])
-;;      (if (not (eof-object? token))
-;;          (begin
-;;            (print token)
-;;            (loop (read/rp *rl-grammar* port)))))))
-
-;;(define (test-parser args)
-;;  (let ([port (open-input-file "../examples/json/json.sg")])
-;;    (let loop ([result (read/lalrp *lalr-grammar* *rl-grammar* port)])
-;;      (if (not (eof-object? result))
-;;          (begin
-;;            (pp result)
-;;            (loop (read/rp *rl-grammar* port)))))))
