@@ -123,7 +123,7 @@
      [(NONTERMINAL)                    (%nonterminal  NONTERMINAL)])
     
     (separator
-     [() (%constant ",")]
+     [() (%terminal "")]
      [(SUPER static) static])))
 
 (define (parse input-port)
