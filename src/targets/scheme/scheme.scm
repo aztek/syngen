@@ -109,10 +109,7 @@
                      (loop (cons `(**pr-list (map (lambda (arg)
                                                       (,(generate-printer-name name) ,(%+ '*indent indent) arg))
                                                     ,(car args))
-                                   ,(match-case separator
-                                      [(nothing) ""]
-                                      [(some ?sep) (car (generate-repr-printer context (list sep) '()))]
-                                      [else (error "generate-repr-printer*" "Type error" separator)]))
+                                   ,(car (generate-repr-printer context (list separator) '())))
                                  code)
                            rest-reprs
                            (cdr args)
@@ -149,7 +146,7 @@
                 (let ([r (reverse (cfg/get-constant context name))])
                   (cond [(equal? name "}")
                          (append r (cons name reprs))]
-                        [(or (equal? name ".") (equal? name ",") (equal? name "{") )
+                        [(or (equal? name ".") (equal? name "{"))
                          (cons name (append r reprs))]
                         [(equal? name "_")
                          (cons name reprs)]

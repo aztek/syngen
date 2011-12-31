@@ -39,17 +39,13 @@
      (%repr-terminal value)]
     [(nonterminal ?name)
      (%repr-nonterminal name)]
-    [(nonterminal+ ?name (some ?separator))
-     (%repr-list name (%some (symbol->repr separator)))]
-    [(nonterminal* ?name (some ?separator))
-     (%repr-list name (%some (symbol->repr separator)))]
-    [(nonterminal+ ?name (nothing))
-     (%repr-list name (%nothing))]
-    [(nonterminal* ?name (nothing))
-     (%repr-list name (%nothing))]
+    [(nonterminal+ ?name ?separator)
+     (%repr-list name (symbol->repr separator))]
+    [(nonterminal* ?name ?separator)
+     (%repr-list name (symbol->repr separator))]
     [(constant ?name)
      (%repr-const name)]
-    [?else (error "symbol->repr" "Type error" else)]))
+    [?else (error "symbol->repr" "Not a grammar symbol" else)]))
 
 (define constant->repr
   (match-lambda

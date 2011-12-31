@@ -123,8 +123,8 @@
      [(NONTERMINAL)                    (%nonterminal  NONTERMINAL)])
     
     (separator
-     [() (%nothing)]
-     [(SUPER static) (%some static)])))
+     [() (%constant ",")]
+     [(SUPER static) static])))
 
 (define (parse input-port)
   (let ([grammar (read/lalrp *lalr-grammar* *rl-grammar* input-port)])
