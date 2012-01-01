@@ -191,7 +191,7 @@
             [constructor-name (generate-constructor-name constructor)]
             [tag (generate-tag constructor)])
        (%define constructor-name
-                (generate-constructor-arguments refs arguments)
+                arguments
                 (%cond (map generate-check refs arguments)
                        `(list ',tag ,@arguments))))]))
 
@@ -240,17 +240,6 @@
                   (loop args
                         (cons arg enumerated)
                         counts))))])))
-
-(define (generate-constructor-arguments refs args)
-  (let ([len (length refs)])
-    (cond [(= 0 len) '()]
-          [else
-           (match-case (list-ref refs (- len 1))
-             [(ref+ ?-)
-              `(,@(take args (- len 1)) . ,(list-ref args (- len 1)))]
-             [(ref* ?-)
-              `(,@(take args (- len 1)) . ,(list-ref args (- len 1)))]
-             [else args])])))
 
 (define (generate-check ref arg)
   (match-case ref

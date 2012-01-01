@@ -5,8 +5,8 @@
 (define (main args)
   (print
    (pr
-    (%object (%entry "type" (%string "superhero"))
-             (%entry "name" (%string "Superman"))
-             (%entry "busted" (%false))
-             (%entry "powers" (%array (%string "flying")
-                                      (%string "infravision")))))))
+    (%object (list (%entry "type" (%string "superhero"))
+                   (%entry "name" (%string "Superman"))
+                   (%entry "busted" (%false))
+                   (%entry "powers" (%array (list (%string "flying")
+                                                  (%string "infravision")))))))))

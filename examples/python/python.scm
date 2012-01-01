@@ -6,11 +6,11 @@
   (print
    (pr
     (%unit
-     (%def "fact" '("n")
-           (%if (%op (%ref "n") (%equal) (%int 0))
-                (%return (%int 1)))
-           (%return (%op (%ref "n")
-                         (%mult)
-                         (%call "fact" (%op (%ref "n")
-                                            (%minus)
-                                            (%int 1))))))))))
+     (list (%def "fact" '("n")
+                 (list (%if (%op (%ref "n") (%equal) (%int 0))
+                            (list (%return (%int 1))))
+                       (%return (%op (%ref "n")
+                                (%mult)
+                                (%call "fact" (list (%op (%ref "n")
+                                                         (%minus)
+                                                         (%int 1)))))))))))))
