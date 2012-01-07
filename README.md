@@ -7,4 +7,4 @@ More verbose description will be added later, by now you can take a look at exam
 
 syngen is using bigloo, see http://www-sop.inria.fr/indes/fp/Bigloo/
 
-To install, type `make all && make install'
+To install, type `make all && make install`
