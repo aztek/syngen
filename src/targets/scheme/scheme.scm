@@ -2,7 +2,7 @@
 
 (module scheme
   (import common cfg adt scheme-generator)
-  (export generate-code))
+  (export generate-scheme-code))
 
 (set! *pp-width* 80)
 
@@ -13,16 +13,16 @@
 (define (predefined-type? type-name)
   (assoc type-name *predefined-types*))
 
-(define (generate-code adts target module output-port)
-  (match-case adts
-    [(adts ?context ?types)
-     (let ([code (cons (generate-module-signature module types)
-                       (append (cdr (%boilerplate))
-                               (append (cdr (apply %begin (map (generate-def context) types)))
-                                       (cdr (generate-common-printer types)))))])
-       (for-each (lambda (c)
-                   (pp c output-port))
-                 code))]))
+(define (generate-scheme-code module adts)
+  (with-output-to-string
+    (lambda ()
+      (match-case adts
+        [(adts ?context ?types)
+         (let ([code (cons (generate-module-signature module types)
+                           (append (cdr (%boilerplate))
+                                   (append (cdr (apply %begin (map (generate-def context) types)))
+                                           (cdr (generate-common-printer types)))))])
+           (for-each pp code))]))))
 
 (define (generate-def context)
   (match-lambda

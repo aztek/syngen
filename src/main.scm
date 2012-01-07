@@ -2,19 +2,15 @@
 
 (module syngen
   (main main)
-  (import common cfg adt transform parser scheme))
+  (import common cfg adt transform parser generate))
 
-(define *syngen-version* "0.1.5")
-(define *targets* '("scheme" "haskell" "java"))
-
-(define (supported-target? target)
-  (member (string-downcase target) *targets*))
+(define *syngen-version* "0.0.1")
 
 (define *type-namespace* "json-")
 (define *type-constructor-namespace* "%")
 
 (define (main argv)
-  (let ([*target* "scheme"]
+  (let ([*target* *default-target*]
         [*module* "generated"]
         [*input* #f]
         [*output* #f]
@@ -55,5 +51,5 @@
                     (fprintf (current-error-port) "Unable to open standart output port.~%")]
                    [else (let* ([grammar (parse input-port)]
                                 [adts (grammar->adts grammar)])
-                           (generate-code adts *target* *module* output-port)
+                           (generate-code *target* *module* adts output-port)
                            (close-output-port output-port))]))])))
