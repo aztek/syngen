@@ -69,7 +69,7 @@
                                          `[(,tag ,@(map (lambda (arg) ($ '? arg)) arguments))
                                            ,(apply %string-append (generate-repr-printer context repr (map $ arguments)))])])
                                     disjuncts)
-                               `(error ,(symbol->string printer-name) "Type error" ,arg)))]
+                               `(error "pr" ,(format "Type error, `~a' expected, got" type) ,arg)))]
         [(string ?-)
          (%define printer-name
                   `(*indent ,arg)
@@ -84,7 +84,9 @@
                                 [printer (generate-printer-name type)])
                             `[(,predicate value) (,printer 0 value)])])
                        types)
-                  `(error "pr" "Type error" value))))
+                  `(error "pr" ,(format "Type error, value of any of types ~a expected, got"
+                                        (apply &, (map (match-lambda [(bind ?type ?-) (format "`~a'" type)]) types)))
+                          value))))
 
 (define (generate-repr-printer context reprs arguments)
   (let loop ([code '()]
@@ -192,7 +194,7 @@
             [tag (generate-tag constructor)])
        (%define constructor-name
                 arguments
-                (%cond (map generate-check refs arguments)
+                (%cond (map (generate-check (symbol->string constructor-name)) refs arguments)
                        `(list ',tag ,@arguments))))]))
 
 (define (generate-constructor-name type-name)
@@ -241,17 +243,18 @@
                         (cons arg enumerated)
                         counts))))])))
 
-(define (generate-check ref arg)
-  (match-case ref
-    [(ref ?type)
-     `((not (,(generate-predicate-name type) ,arg))
-       (error "some-func" "Type error" ,arg))]
-    [(ref* ?type)
-     `((not (and (list? ,arg) (every? ,(generate-predicate-name type) ,arg)))
-       (error "some-func" "Type error" ,arg))]
-    [(ref+ ?type)
-     `((not (and (list? ,arg) (> (length ,arg) 0) (every? ,(generate-predicate-name type) ,arg)))
-       (error "some-func" "Type error" ,arg))]))
+(define (generate-check func)
+  (lambda (ref arg) ; i really miss currying in scheme...
+    (match-case ref
+      [(ref ?type)
+       `((not (,(generate-predicate-name type) ,arg))
+         (error ,func ,(format "Type error, `~a' expected, got" type) ,arg))]
+      [(ref* ?type)
+       `((not (and (list? ,arg) (every? ,(generate-predicate-name type) ,arg)))
+         (error ,func ,(format "Type error, list of `~a' expected, got" type) ,arg))]
+      [(ref+ ?type)
+       `((not (and (list? ,arg) (> (length ,arg) 0) (every? ,(generate-predicate-name type) ,arg)))
+         (error ,func ,(format "Type error, list of `~a' expected, got" type) ,arg))])))
 
 (define (generate-module-signature module types)
   (%module (string->symbol module)

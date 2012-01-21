@@ -1,7 +1,7 @@
 ;;;; 2011, Evgeny Kotelnikov <evgeny.kotelnikov@gmail.com>
 
 (module common
-  (export & &_ &- $ $_)
+  (export & &_ &- &, $ $_)
   (export separate)
   (export debug)
   (export %some %nothing))
@@ -18,6 +18,9 @@
 
 (define (&- . args)
   (apply string-intersperse (cons "-" args)))
+
+(define (&, . args)
+  (apply string-intersperse (cons ", " args)))
 
 (define ($ . args)
   (string->symbol (apply & args)))
