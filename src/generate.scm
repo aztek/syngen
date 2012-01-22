@@ -12,8 +12,8 @@
 (define *default-target* "scheme")
 
 (define (generate-code target module adts output-port)
-  (let ([generator (match-case target
-                     ["scheme" generate-scheme-code]
-                     ["haskell" generate-haskell-code])])
-    (display (generator module adts)
+  (let ([generate (match-case target
+                    ["scheme" generate-scheme-code]
+                    ["haskell" generate-haskell-code])])
+    (display (generate module adts)
              output-port)))
