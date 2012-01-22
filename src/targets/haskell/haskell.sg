@@ -1,0 +1,66 @@
+% 2011, Evgeny Kotelnikov <evgeny.kotelnikov@gmail.com>
+
+$( : "(" . ;
+$) : . ")" ;
+
+${ : "where\n" . ;
+$} : . ;
+
+module-name : /([A-Z][a-z0-9]*)+/ ;
+import-name : /[A-Z][a-z0-9]*(\.[A-Z][a-z0-9]*)*/ ;
+fun-name : /[a-z][a-zA-Z0-9]*/ ;
+type-name : /([A-Z][a-zA-Z0-9]*)*/ ;
+class-name : /([A-Z][a-zA-Z0-9]*)*/ ;
+constructor : /([A-Z][a-z0-9]*)*/ ;
+var : /[a-z][a-zA-Z0-9]*/ ;
+
+module
+    : "module" module-name $( export-name^", "* $)
+      { import* . statement+ } ;
+
+export-name
+    : (export type) type-name
+    | (export fun) fun-name
+    ;
+
+_ . import . "\n"
+    : "import" import-name ;
+
+_ . statement . "\n"
+    : "data" type-name "=" branch^" | "+
+    | (fundef) fun-name var* "=" expression
+    | "class" class-name var+ { class-member+ }
+    | "instance" class-name type-name { match+ }
+    ;
+
+branch
+    : constructor type^,* ;
+
+_  . class-member . "\n"
+    : (signature) fun-name "::" type
+    | (function) fun-name var* "=" expression ;
+
+type
+    : (plain type) type-name
+    | (list type) "[" . type-name . "]"
+    | (fun type) type "->" type
+    | (var type) var
+    ;
+
+_ . match . "\n"
+    : fun-name "indent" $( constructor var^,* $) "=" expression ;
+
+expression
+    : (expr var) var
+    | (expr num) integer
+    | (expr string) string
+    | (expr funcall) fun-name expression^,+
+    | (expr fun) fun-name
+    | (expr cons) constructor
+    | (expr concat) expression "++" expression
+    | (expr plus) expression "+" expression
+    | (expr minus) expression "-" expression
+    | (expr regexp) expression "=~" string
+    | (expr apply) expression "$" expression
+    | (expr parens) "(" . expression . ")"
+    ;

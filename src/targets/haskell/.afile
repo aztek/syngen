@@ -1,0 +1,4 @@
+((common "../../common.scm")
+ (cfg "../../cfg.scm")
+ (adt "../../adt.scm")
+ (haskell-generator "haskell-generator.scm"))
