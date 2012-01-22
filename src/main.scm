@@ -33,18 +33,18 @@
       [(("-h" "--help" "?") (help "?,-h,--help" "This help message"))
        (args-parse-usage #f)]
       [else
-       (print "Illegal argument '" else "'. Usage:")
+       (print "Illegal argument `" else "'. Usage:")
        (args-parse-usage #f)])
 
     (cond [(not (supported-target? *target*))
            (fprintf (current-error-port) "`~a' is currently not supported. Supported languages are Scheme~%" *target* *targets*)]
           [(not *input*)
-           (fprintf (current-error-port) "Input file is not specified. Use -i flag.")]
+           (fprintf (current-error-port) "Input file is not specified. Use -i flag.~%")]
           [else
            (let ([input-port  (open-input-file *input*)]
                  [output-port (if *output* (open-output-file *output*) (current-output-port))])
              (cond [(not input-port)
-                    (fprintf (current-error-port) "Unable to open ~s for reading.~%" *input*)]
+                    (fprintf (current-error-port) "Unable to open `~s' for reading.~%" *input*)]
                    [(and (not output-port) *output*)
                     (fprintf (current-error-port) "Unable to open `~s' for writing.~%" *output*)]
                    [(not output-port)
