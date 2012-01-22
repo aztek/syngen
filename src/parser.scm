@@ -17,6 +17,18 @@
                                   [else ""])
                                 symbols))])]))
 
+(define (pattern-pivot pattern)
+  (and (pair? pattern)
+       (match-case (car pattern)
+         [(nonterminal ?name) name]
+         [else (pattern-pivot (cdr pattern))])))
+
+(define (fit-in-pattern pattern symbols)
+  (cond [(not (pair? pattern)) symbols]
+        [else (match-case (car pattern)
+                [(nonterminal ?-) (append symbols (cdr pattern))]
+                [else (cons (car pattern) (fit-in-pattern (cdr pattern) symbols))])]))
+
 (define *rl-grammar*
   (regular-grammar
     ([whitespace	(or #\newline #\tab #\space)]
@@ -59,7 +71,7 @@
     (unit
      [()]
      [(binds) (let ([binds (separate binds (match-lambda [(const ?- ?-) #t] [else #f]))])
-                (%grammar (cfg/join-constants (car binds) *cfg/default-constants*) (cdr binds)))])
+                (%grammar (car binds) (reverse (cdr binds))))])
 
     (binds
      [(bind binds) (cons bind binds)]
@@ -68,16 +80,16 @@
     (bind
      [(CONSTANT COLON symbols SEMICOLON) (%const CONSTANT symbols)]
      [(pattern COLON bind-body)
-      (let ([name (cfg/pattern-pivot pattern)])
+      (let ([name (pattern-pivot pattern)])
         (%bind name
                (match-case bind-body
                  [(token ?-) bind-body]
                  [(rule ?productions)
                   (%rule (map (match-lambda
                                 [(production (some ?constructor) ?symbols)
-                                 (%production constructor (cfg/fit-in-pattern pattern symbols))]
+                                 (%production constructor (fit-in-pattern pattern symbols))]
                                 [(production (nothing) ?symbols)
-                                 (%production (generate-abstract-name name productions symbols) (cfg/fit-in-pattern pattern symbols))])
+                                 (%production (generate-abstract-name name productions symbols) (fit-in-pattern pattern symbols))])
                               productions))])))])
 
     (pattern

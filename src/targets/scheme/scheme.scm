@@ -1,7 +1,7 @@
 ;;;; 2011, Evgeny Kotelnikov <evgeny.kotelnikov@gmail.com>
 
 (module scheme
-  (import common cfg adt scheme-generator)
+  (import common adt scheme-generator)
   (export generate-scheme-code))
 
 (set! *pp-width* 80)
@@ -13,28 +13,26 @@
 (define (predefined-type? type-name)
   (assoc type-name *predefined-types*))
 
-(define (generate-scheme-code module adts)
+(define (generate-scheme-code module types)
   (with-output-to-string
-    (lambda ()
-      (match-case adts
-        [(adts ?context ?types)
-         (let ([code (cons (generate-module-signature module types)
-                           (append (cdr (%boilerplate))
-                                   (append (cdr (apply %begin (map (generate-def context) types)))
-                                           (cdr (generate-common-printer types)))))])
-           (for-each pp code))]))))
+   (lambda ()
+     (let ([code (cons (generate-module-signature module types)
+                       (append (cdr (%boilerplate))
+                               (append (cdr (apply %begin (map generate-def types)))
+                                       (cdr (generate-common-printer types)))))])
+       (for-each pp code)))))
 
-(define (generate-def context)
+(define generate-def
   (match-lambda
     [(bind ?type ?body)
      (match-case body
        [(sum ?disjuncts)
         (apply %begin (cons (generate-predicate type body)
-                            (cons (generate-printer context type body)
+                            (cons (generate-printer type body)
                                   (map (generate-constructor type) disjuncts))))]
        [(string ?regexp)
         (%begin (generate-predicate type body)
-                (generate-printer context type body))]
+                (generate-printer type body))]
        [else (error "generate-def" "Neither sum type nor token" body)])]
     [?else (error "generate-def" "Not a type definition" else)]))
 
@@ -53,7 +51,7 @@
               `(pregexp-match ,regexp value))]
     [else (error "generate-predicate" "Neither sum type nor token" body)]))
 
-(define (generate-printer context type body)
+(define (generate-printer type body)
   (let ([printer-name (generate-printer-name type)]
         [printer-front (generate-printer-front type)])
     (let ([arg (generate-printer-argument type)])
@@ -67,7 +65,7 @@
                                        (let ([arguments (generate-arguments refs)]
                                              [tag (generate-tag constructor)])
                                          `[(,tag ,@(map (lambda (arg) ($ '? arg)) arguments))
-                                           ,(apply %string-append (generate-repr-printer context repr (map $ arguments)))])])
+                                           ,(apply %string-append (generate-repr-printer repr (map $ arguments)))])])
                                     disjuncts)
                                `(error "pr" ,(format "Type error, `~a' expected, got" type) ,arg)))]
         [(string ?-)
@@ -88,9 +86,9 @@
                                         (apply &, (map (match-lambda [(bind ?type ?-) (format "`~a'" type)]) types)))
                           value))))
 
-(define (generate-repr-printer context reprs arguments)
+(define (generate-repr-printer reprs arguments)
   (let loop ([code '()]
-             [reprs (process-constants context reprs)]
+             [reprs reprs]
              [args arguments]
              [indent 0])
     (cond [(not (pair? reprs)) (reverse code)]
@@ -111,75 +109,21 @@
                      (loop (cons `(**pr-list (map (lambda (arg)
                                                       (,(generate-printer-name name) ,(%+ '*indent indent) arg))
                                                     ,(car args))
-                                   ,(car (generate-repr-printer context (list separator) '())))
+                                   ,(car (generate-repr-printer (list separator) '())))
                                  code)
                            rest-reprs
                            (cdr args)
                            indent)]
-                    [(repr-const ?name)
-                     (loop (append (generate-repr-printer context (cfg/get-constant context name) '()) code)
-                           rest-reprs
-                           args
-                           indent)]
-                    ["{"
+                    [(repr-const "{")
                      (loop code rest-reprs args (+ indent 1))]
-                    ["}"
+                    [(repr-const "}")
                      (loop code rest-reprs args (- indent 1))]
-                    ["_"
+                    [(repr-const "_")
                      (loop (cons `(make-string (* 4 ,(%+ '*indent indent)) #\space) code) rest-reprs args indent)]
-                    ["."
-                     (loop code rest-reprs args indent)]
                     [else (error "generate-repr-printer" "Type error, not a repr" repr)]))])))
 
 (define (prepare-terminal terminal)
   (pregexp-replace (pregexp-quote "\\n") terminal "\n"))
-
-(define (process-constants context reprs)
-  (let ([expanded (expand-constants context reprs)])
-    (if (equal? reprs expanded)
-        (insert-separators context expanded)
-        (process-constants context expanded))))
-
-(define (expand-constants context reprs)
-  (reverse
-   (reduce (lambda (repr reprs)
-             (match-case repr
-               [(repr-const ?name)
-                (let ([r (reverse (cfg/get-constant context name))])
-                  (cond [(equal? name "}")
-                         (append r (cons name reprs))]
-                        [(or (equal? name ".") (equal? name "{"))
-                         (cons name (append r reprs))]
-                        [(equal? name "_")
-                         (cons name reprs)]
-                        [else (append r reprs)]))]
-               [else (cons repr reprs)]))
-           '()
-           (if (pair? reprs)
-               (cons '() reprs)
-               '()))))
-
-(define (insert-separators context reprs)
-  (let ([sep (reverse (cfg/get-constant context ","))]
-        [internal? (lambda (repr)
-                     (or (equal? repr "{")
-                         (equal? repr "}")
-                         (equal? repr "_")))])
-    (letrec ([pcar (lambda (reprs)
-                     (if (pair? reprs)
-                         (if (not (internal? (car reprs)))
-                             (car reprs)
-                             (pcar (cdr reprs)))
-                         "."))])
-      (reverse
-       (reduce (lambda (repr reprs)
-                 (cond [(or (internal? repr) (internal? (car reprs))) (cons repr reprs)]
-                       [(or (equal? repr ".") (equal? (pcar reprs) ".")) (cons repr reprs)]
-                       [else (cons repr (append sep reprs))]))
-               '()
-               (if (pair? reprs)
-                   (cons (list (car reprs)) (cdr reprs))
-                   '()))))))
 
 (define (generate-product-pattern product)
   (match-case product
@@ -254,7 +198,7 @@
          (error ,func ,(format "Type error, list of `~a' expected, got" type) ,arg))]
       [(ref+ ?type)
        `((not (and (list? ,arg) (> (length ,arg) 0) (every? ,(generate-predicate-name type) ,arg)))
-         (error ,func ,(format "Type error, list of `~a' expected, got" type) ,arg))])))
+         (error ,func ,(format "Type error, non-empty list of `~a' expected, got" type) ,arg))])))
 
 (define (generate-module-signature module types)
   (%module (string->symbol module)

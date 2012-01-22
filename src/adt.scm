@@ -1,12 +1,9 @@
 ;;;; 2011, Evgeny Kotelnikov <evgeny.kotelnikov@gmail.com>
 
 (module adt
-  (export %adts)
   (export %product %sum %string)
   (export %ref %ref* %ref+)
   (export %repr-terminal %repr-nonterminal %repr-list %repr-const))
-
-(define (%adts constants types) (list 'adts constants types))
 
 ;; Inductive types
 (define (%product constructor refs representation) (list 'product constructor refs representation))
