@@ -3,7 +3,7 @@
 (module common
   (export & &_ &- &, $ $_)
   (export separate)
-  (export debug)
+  (export tokenize camelcase uppercamelcase)
   (export %some %nothing))
 
 (define (string-intersperse separator . strings)
@@ -40,5 +40,22 @@
             (loop (cdr lst) (cons (car result) (cons (car lst) (cdr result)))))
         result)))
 
-(define (debug . args)
-  (apply fprint (cons (current-error-port) args)))
+(define *name-tokenizer-grammar*
+  (regular-grammar ()
+   (define *tokens* '())
+   [(+ alpha) (set! *tokens* (cons (string-downcase (the-string)) *tokens*))
+              (ignore)]
+   [(out alpha) (ignore)]
+   [else *tokens*]))
+
+(define (tokenize name)
+  (with-input-from-string name
+   (lambda ()
+     (reverse (read/rp *name-tokenizer-grammar* (current-input-port))))))
+
+(define (camelcase name)
+  (let ([tokens (tokenize name)])
+    (apply & (cons (car tokens) (map string-capitalize (cdr tokens))))))
+
+(define (uppercamelcase name)
+  (apply & (map string-capitalize (tokenize name))))
