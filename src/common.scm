@@ -4,6 +4,7 @@
   (export & &_ &- &, $ $_)
   (export separate)
   (export tokenize camelcase uppercamelcase)
+  (export enumerate-duplicates)
   (export %some %nothing))
 
 (define (string-intersperse separator . strings)
@@ -59,3 +60,20 @@
 
 (define (uppercamelcase name)
   (apply & (map string-capitalize (tokenize name))))
+
+(define (enumerate-duplicates args)
+  (let loop ([args args]
+             [enumerated '()]
+             [counts '()])
+    (cond [(not (pair? args)) (reverse enumerated)]
+          [(let ([arg (car args)]
+                 [args (cdr args)])
+            (let* ([pair (assoc arg counts)]
+                   [count (if (not pair) 1 (+ 1 (cdr pair)))]
+                   [counts (cons (cons arg count) counts)])
+                (let ([arg (if (or (member arg args) (> count 1))
+                               (string-append arg (number->string count))
+                               arg)])
+                  (loop args
+                        (cons arg enumerated)
+                        counts))))])))

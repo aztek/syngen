@@ -117,23 +117,6 @@
            [(ref+ ?type) (generate-variable-name type)])
          refs)))
 
-(define (enumerate-duplicates args)
-  (let loop ([args args]
-             [enumerated '()]
-             [counts '()])
-    (cond [(not (pair? args)) (reverse enumerated)]
-          [(let ([arg (car args)]
-                 [args (cdr args)])
-            (let* ([pair (assoc arg counts)]
-                   [count (if (not pair) 1 (+ 1 (cdr pair)))]
-                   [counts (cons (cons arg count) counts)])
-                (let ([arg (if (or (member arg args) (> count 1))
-                               (string-append arg (number->string count))
-                               arg)])
-                  (loop args
-                        (cons arg enumerated)
-                        counts))))])))
-
 (define (generate-exports types)
   (cons (%export-fun "pr")
         (reverse (apply append
