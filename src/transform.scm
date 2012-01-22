@@ -46,9 +46,15 @@
     [(nonterminal ?name)
      (%repr-nonterminal name)]
     [(nonterminal+ ?name ?separator)
-     (%repr-list name (car (optimize-reprs (process-constants context (list ((symbol->repr context) separator))))))] ; TODO: this is sloppy and probably buggy in some cases
+     (let ([sep (car (optimize-reprs (process-constants context (list ((symbol->repr context) separator)))))]) ; TODO: this is sloppy and probably buggy in some cases
+       (match-case sep
+         [(terminal ?value) (%repr-list name (%repr-terminal value))]
+         [else (%repr-list name sep)]))]
     [(nonterminal* ?name ?separator)
-     (%repr-list name (car (optimize-reprs (process-constants context (list ((symbol->repr context) separator))))))] ; TODO: need to come up with something better
+     (let ([sep (car (optimize-reprs (process-constants context (list ((symbol->repr context) separator)))))]) ; TODO: need to come up with something better
+       (match-case sep
+         [(terminal ?value) (%repr-list name (%repr-terminal value))]
+         [else (%repr-list name sep)]))]
     [(constant ?name)
      (%repr-const name)]
     [?else (error "symbol->repr" "Not a grammar symbol" else)]))
